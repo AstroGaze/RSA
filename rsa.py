@@ -1,36 +1,65 @@
+#Practica de Algoritmo 
+#Cifrado de Mensaje
+
+#2024-02-14
+
+#Importamos
+
 import Crypto.Util.number
-import Crypto.Random
 
-# Configuración inicial igual que tu código
+#Numero de bits
 bits = 1024
-e = 65537
 
-# Generación de claves para Alice
+#Obtener lso primos para Alice y Bob
+#Alice
 pA = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
 qA = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
+
+#Bob
+pB = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
+qB = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
+
+
+print("pA: ", pA, "\n")
+print("qA: ", qA, "\n")
+
 nA = pA * qA
+nB = pB * qB
+
+print("nA" , nA )
+print("nB ", nB )
+
+#Calculamos el indicador de Eular Phi
 phiA = (pA - 1) * (qA - 1)
+phiB = (pB - 1) * (qB - 1) 
+
+#Por razones de eficiencia usaremos el numero 4 de Fernet, 65537, debido a que es un primo largo y no es potencia de 2
+
+e = 65537
+
 dA = Crypto.Util.number.inverse(e, phiA)
+dB = Crypto.Util.number.inverse(e, phiB)
 
-# Supongamos que este es el mensaje que Alice quiere enviar y firmar
+print("dA: ", dA, "\n")
+
+#Ciframos el menesaje 
 msg = 'Hola mundo'
-m = int.from_bytes(msg.encode('utf-8'), byteorder='big')
+print("Mensaje Original: ", msg ,"\n")
+print("Longitud del mensaje en bytes : ", len(msg.encode('utf-8')))
 
-# Firma el mensaje
-firma = pow(m, dA, nA)
+#Convertir el mensaje a numero
+m = int.from_bytes(msg.encode('utf-8', byteorder = 'big'))
+print("Mensaje convertido en entero: ", m, "\n")
 
-# Enviar `m` y `firma` a Bob, quien puede verificar la firma usando la clave pública de Alice
-# Para este ejemplo, simularemos la verificación inmediatamente después
 
-# Verificación de la firma
-m_verificado = pow(firma, e, nA)
+c = pow(m, e, nB)
+print("Mensaje cifrado ", c, "\n")
 
-# Comprobamos si la verificación fue exitosa
-if m == m_verificado:
-    print("La firma es válida.")
-else:
-    print("La firma NO es válida.")
+#Desciframos mensaje 
+des = pow(c, dB, nB)
 
-# Convertir m_verificado a texto para asegurarse de que coincide con el mensaje original
-msg_verificado = int.to_bytes(m_verificado, len(msg), byteorder='big').decode('utf-8')
-print("Mensaje verificado: ", msg_verificado)
+print("Mensaje Descifrado: ", des, "\n")
+
+#Convertimos el mensaje de numero a texto
+msg_final = int.to_bytes(des, len(msg), byteorder='big').decode('utf-8')
+print("Mensaje convertido en entero: ", msg, "\n")
