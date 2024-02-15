@@ -1,7 +1,9 @@
 import Crypto.Util.number
 import Crypto.Random
+from Crypto.Hash import SHA256
+import Crypto.PublicKey.RSA as RSA
 
-# Configuración inicial igual que tu código
+# Configuración inicial
 bits = 1024
 e = 65537
 
@@ -12,25 +14,28 @@ nA = pA * qA
 phiA = (pA - 1) * (qA - 1)
 dA = Crypto.Util.number.inverse(e, phiA)
 
-# Supongamos que este es el mensaje que Alice quiere enviar y firmar
-msg = 'Hola mundo'
-m = int.from_bytes(msg.encode('utf-8'), byteorder='big')
+# Mensaje que Alice quiere enviar y firmar
+msg = 'Hola mundo como estan'
 
-# Firma el mensaje
-firma = pow(m, dA, nA)
+# Paso 1: Hash del mensaje
+hash_obj = SHA256.new(msg.encode('utf-8'))
+m_hash = int.from_bytes(hash_obj.digest(), byteorder='big')
 
-# Enviar `m` y `firma` a Bob, quien puede verificar la firma usando la clave pública de Alice
-# Para este ejemplo, simularemos la verificación inmediatamente después
+# Paso 2: Firma del hash del mensaje
+firma = pow(m_hash, dA, nA)
 
-# Verificación de la firma
+# Bob recibe el mensaje y la firma, y realiza la verificación
+
+# Paso 3: Verificación de la firma
+# Bob calcula el hash del mensaje recibido
+hash_obj_bob = SHA256.new(msg.encode('utf-8'))
+m_hash_bob = int.from_bytes(hash_obj_bob.digest(), byteorder='big')
+
+# Bob usa la clave pública de Alice para verificar la firma
 m_verificado = pow(firma, e, nA)
 
-# Comprobamos si la verificación fue exitosa
-if m == m_verificado:
+# Comprobación de la verificación
+if m_hash_bob == m_verificado:
     print("La firma es válida.")
 else:
     print("La firma NO es válida.")
-
-# Convertir m_verificado a texto para asegurarse de que coincide con el mensaje original
-msg_verificado = int.to_bytes(m_verificado, len(msg), byteorder='big').decode('utf-8')
-print("Mensaje verificado: ", msg_verificado)
