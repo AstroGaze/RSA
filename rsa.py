@@ -1,36 +1,36 @@
-#Practica de Algoritmo 
-#Cifrado de Mensaje
-
-#2024-02-14
-
-#Importamos
-
 import Crypto.Util.number
+import Crypto.Random
 
-#Numero de bits
+# Configuración inicial igual que tu código
 bits = 1024
+e = 65537
 
-#Obtener lso primos para Alice y Bob
-#Alice
+# Generación de claves para Alice
 pA = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
 qA = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
-
-#Bob
-pB = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
-qB = Crypto.Util.number.getPrime(bits, randfunc=Crypto.Random.get_random_bytes)
-
-
-print("pA: ", pA, "\n")
-print("qA: ", qA, "\n")
-
 nA = pA * qA
-nB = pB * qB
-
-print("nA" , nA )
-print("nB ", nB )
-
-#Calculamos el indicador de Eular Phi
 phiA = (pA - 1) * (qA - 1)
-phiB = (pB - 1) * (qB - 1) 
+dA = Crypto.Util.number.inverse(e, phiA)
 
-#Por razones de eficiencia usaremos el numero 4 de Fernet, 65537, debido a que es un primo largo y no es potencia de 2, y como
+# Supongamos que este es el mensaje que Alice quiere enviar y firmar
+msg = 'Hola mundo'
+m = int.from_bytes(msg.encode('utf-8'), byteorder='big')
+
+# Firma el mensaje
+firma = pow(m, dA, nA)
+
+# Enviar `m` y `firma` a Bob, quien puede verificar la firma usando la clave pública de Alice
+# Para este ejemplo, simularemos la verificación inmediatamente después
+
+# Verificación de la firma
+m_verificado = pow(firma, e, nA)
+
+# Comprobamos si la verificación fue exitosa
+if m == m_verificado:
+    print("La firma es válida.")
+else:
+    print("La firma NO es válida.")
+
+# Convertir m_verificado a texto para asegurarse de que coincide con el mensaje original
+msg_verificado = int.to_bytes(m_verificado, len(msg), byteorder='big').decode('utf-8')
+print("Mensaje verificado: ", msg_verificado)
